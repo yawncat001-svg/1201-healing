@@ -1,28 +1,8 @@
-import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
-import Kakao from "next-auth/providers/kakao";
-
-export const { handlers, auth, signIn, signOut } = NextAuth({
-    providers: [
-        Google({
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        }),
-        Kakao({
-            clientId: process.env.KAKAO_CLIENT_ID,
-            clientSecret: process.env.KAKAO_CLIENT_SECRET,
-        }),
-    ],
-    trustHost: true,
-    callbacks: {
-        async session({ session, token }) {
-            if (session.user) {
-                session.user.id = token.sub as string;
-            }
-            return session;
-        },
-    },
-    pages: {
-        signIn: "/login",
-    },
-});
+// NextAuth 비활성화를 위한 Mock 파일
+export const auth = async () => null;
+export const signIn = async () => { };
+export const signOut = async () => { };
+export const handlers = {
+    GET: async () => new Response("OK"),
+    POST: async () => new Response("OK"),
+};

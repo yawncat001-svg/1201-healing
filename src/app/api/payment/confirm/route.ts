@@ -1,8 +1,8 @@
+export const runtime = "edge";
+
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getDB } from "@/lib/db";
-
-export const runtime = "edge";
 
 export async function POST(request: Request) {
     const session = await auth();
@@ -12,7 +12,8 @@ export async function POST(request: Request) {
 
         // 토스페이먼츠 승인 API 호출 (서버 환경변수 비밀키 사용)
         const secretKey = process.env.TOSS_SECRET_KEY || "test_sk_py7McZdaRVE75M5nNG8V60YpW4Pr";
-        const basicToken = Buffer.from(`${secretKey}:`).toString("base64");
+        // Node.js Buffer 대신 btoa 사용 (Edge 런타임 호환성)
+        const basicToken = btoa(`${secretKey}:`);
 
         const response = await fetch("https://api.tosspayments.com/v1/payments/confirm", {
             method: "POST",
