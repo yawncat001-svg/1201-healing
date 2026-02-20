@@ -1,5 +1,16 @@
-#:schema node_modules/wrangler/config-schema.json
-name = "1201-breathe"
-compatibility_date = "2024-11-01"
+# wrangler.toml
+name = "1201-healing"
+compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = ".vercel/output/static"
+
+[vars]
+SITE_URL = "https://1201.yawncat.co.kr"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "1201-db"
+database_id = "your-d1-database-id-here"
+
+# Deployment Configuration
+# Build output directory for Cloudflare Pages with OpenNext/Next.js
+# pages_build_output_dir = ".vercel/output/static"

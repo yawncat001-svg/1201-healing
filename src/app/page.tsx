@@ -1,128 +1,112 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import BreathingCircle from "@/components/BreathingCircle";
+import { useRouter } from "next/navigation";
 import { modes, Mode } from "@/lib/modes";
 import { useStore } from "@/stores/useStore";
-import { useRouter } from "next/navigation";
+import PremiumModal from "@/components/PremiumModal";
+import { Lock } from "lucide-react";
 
 export default function Landing() {
     const [phase, setPhase] = useState<"intro" | "select">("intro");
-    const { setMode } = useStore();
+    const [fading, setFading] = useState(false);
+    const { setMode, isPremium, setShowPremiumModal } = useStore();
     const router = useRouter();
 
     const handleEnter = () => {
-        setPhase("select");
+        setFading(true);
+        setTimeout(() => {
+            setPhase("select");
+            setFading(false);
+        }, 800);
     };
 
-    const handleModeSelect = (mode: Mode) => {
-        setMode(mode);
+    const handleModeSelect = (modeKey: Mode) => {
+        const mode = modes[modeKey];
+        if (mode.isPremium && !isPremium) {
+            setShowPremiumModal(true);
+            return;
+        }
+        setMode(modeKey);
         router.push("/space");
     };
 
     return (
         <main className="relative h-screen w-screen bg-black flex flex-col items-center justify-center overflow-hidden">
-            <AnimatePresence mode="wait">
-                {phase === "intro" && (
-                    <motion.div
-                        key="intro"
-                        className="flex flex-col items-center gap-12"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 1.2 }}
-                    >
-                        {/* 12:01 타이포그래피 */}
-                        <motion.h1
-                            className="font-display text-6xl md:text-8xl
-                         text-white/90 tracking-healing"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 2, delay: 0.5 }}
-                        >
-                            12:01
-                        </motion.h1>
+            {/* ===== INTRO PHASE ===== */}
+            {phase === "intro" && (
+                <div
+                    className={`flex flex-col items-center gap-12 transition-opacity duration-800 ${fading ? "opacity-0" : "opacity-100"}`}
+                >
+                    <h1 className="text-7xl md:text-9xl text-white/90 font-extralight tracking-widest animate-fade-in delay-500">
+                        12:01
+                    </h1>
+                    <p className="text-sm md:text-base text-white/50 tracking-widest animate-fade-in delay-1500">
+                        당신이 당신에게 돌아오는 시간
+                    </p>
+                    <div className="relative flex items-center justify-center w-24 h-24 animate-fade-in delay-2500">
+                        <div className="absolute w-20 h-20 rounded-full bg-white/40 blur-2xl animate-breathe-glow" />
+                        <button
+                            onClick={handleEnter}
+                            className="relative w-12 h-12 rounded-full bg-white/40 z-10 animate-breathe cursor-pointer border-none"
+                        />
+                    </div>
+                </div>
+            )}
 
-                        {/* 서브카피 */}
-                        <motion.p
-                            className="text-white/50 text-sm md:text-base
-                         tracking-healing leading-relaxed"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 2, delay: 1.5 }}
-                        >
-                            당신이 당신에게 돌아오는 시간
-                        </motion.p>
+            {/* ===== SELECT PHASE ===== */}
+            {phase === "select" && (
+                <div className="flex flex-col items-center gap-16 px-8 max-w-4xl w-full">
+                    <p className="text-sm text-white/40 tracking-widest animate-fade-in delay-500">
+                        오늘은 어떤 빛이 필요한가요
+                    </p>
 
-                        {/* 숨 쉬는 원 CTA */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 2, delay: 2.5 }}
-                        >
-                            <BreathingCircle
-                                color="rgba(255, 255, 255, 0.4)"
-                                size={48}
-                                onClick={handleEnter}
-                                label="시작하기"
-                            />
-                        </motion.div>
-                    </motion.div>
-                )}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-16 animate-fade-in delay-1000 overflow-y-auto max-h-[70vh] py-8 no-scrollbar">
+                        {(Object.keys(modes) as Mode[]).map((modeKey, i) => {
+                            const mode = modes[modeKey];
+                            const isLocked = mode.isPremium && !isPremium;
 
-                {phase === "select" && (
-                    <motion.div
-                        key="select"
-                        className="flex flex-col items-center gap-16"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 1.2 }}
-                    >
-                        {/* 질문 */}
-                        <motion.p
-                            className="text-white/40 text-sm tracking-healing"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            오늘은 어떤 빛이 필요한가요
-                        </motion.p>
-
-                        {/* 3개 모드 선택 */}
-                        <div className="flex gap-12 md:gap-20">
-                            {(Object.keys(modes) as Mode[]).map((modeKey, i) => {
-                                const mode = modes[modeKey];
-                                return (
-                                    <motion.div
-                                        key={modeKey}
-                                        className="flex flex-col items-center gap-4"
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.5 + i * 0.3 }}
-                                    >
-                                        <BreathingCircle
-                                            color={mode.circleColor}
-                                            size={56}
-                                            onClick={() => handleModeSelect(modeKey)}
-                                            label={mode.nameKR}
+                            return (
+                                <div
+                                    key={modeKey}
+                                    className="flex flex-col items-center gap-4 group cursor-pointer"
+                                    onClick={() => handleModeSelect(modeKey)}
+                                >
+                                    {/* 모드 원 */}
+                                    <div className="relative flex items-center justify-center w-20 h-20">
+                                        <div
+                                            className="absolute w-16 h-16 rounded-full blur-xl opacity-60 group-hover:opacity-100 transition-opacity animate-breathe-glow"
+                                            style={{ backgroundColor: mode.circleColor }}
                                         />
-                                        <div className="text-center">
-                                            <p className="text-white/70 text-xs tracking-healing">
-                                                {mode.nameKR}
-                                            </p>
-                                            <p className="text-white/30 text-[10px]
-                                    tracking-healing mt-1">
-                                                {mode.name}
-                                            </p>
+                                        <div
+                                            className="relative w-12 h-12 rounded-full z-10 animate-breathe flex items-center justify-center overflow-hidden"
+                                            style={{ backgroundColor: mode.circleColor }}
+                                        >
+                                            {isLocked && (
+                                                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
+                                                    <Lock size={12} className="text-white/60" />
+                                                </div>
+                                            )}
                                         </div>
-                                    </motion.div>
-                                );
-                            })}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                                    </div>
+
+                                    {/* 라벨 */}
+                                    <div className="text-center">
+                                        <p className="text-xs text-white/70 tracking-widest leading-none">
+                                            {mode.nameKR}
+                                        </p>
+                                        <p className="text-[9px] text-white/30 tracking-widest mt-2 uppercase">
+                                            {mode.name}
+                                        </p>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            <PremiumModal />
         </main>
     );
 }

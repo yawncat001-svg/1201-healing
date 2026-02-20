@@ -5,18 +5,31 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "pages:build": "npx @cloudflare/next-on-pages",
+    "preview": "npm run pages:build && wrangler pages dev",
+    "deploy": "npm run pages:build && wrangler pages deploy",
+    "render:dawn": "npx remotion render src/remotion/Root.tsx DawnLoop public/videos/dawn-loop.mp4",
+    "render:noon": "npx remotion render src/remotion/Root.tsx NoonLoop public/videos/noon-loop.mp4",
+    "render:dusk": "npx remotion render src/remotion/Root.tsx DuskLoop public/videos/dusk-loop.mp4",
+    "render:all": "npm run render:dawn && npm run render:noon && npm run render:dusk",
+    "preview:remotion": "npx remotion preview src/remotion/Root.tsx",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
+    "@remotion/cli": "^4.0.427",
+    "@remotion/renderer": "^4.0.427",
+    "@tosspayments/tosspayments-sdk": "^2.5.0",
+    "clsx": "^2.1.1",
     "lucide-react": "^0.475.0",
     "next": "15.1.7",
+    "next-auth": "^5.0.0-beta.30",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "framer-motion": "^12.4.3",
-    "zustand": "^5.0.3",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^3.0.1"
+    "remotion": "^4.0.427",
+    "tailwind-merge": "^3.0.1",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@types/node": "^20.17.19",

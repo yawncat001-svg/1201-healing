@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import { useStore } from "../stores/useStore";
-import { modes } from "../lib/modes";
+import { modes, Mode } from "../lib/modes";
 
 export default function SoundPlayer() {
     const { currentMode, volume } = useStore();
     const audioRef = useRef<HTMLAudioElement>(null);
-    const modeConfig = modes[currentMode];
+    const modeConfig = modes[currentMode as Mode];
 
     useEffect(() => {
         if (audioRef.current) {
@@ -20,7 +20,7 @@ export default function SoundPlayer() {
 
     return (
         <audio ref={audioRef} loop>
-            <source src={modeConfig.sound} type="audio/mpeg" />
+            <source src={modeConfig.soundSrc} type="audio/mpeg" />
         </audio>
     );
 }

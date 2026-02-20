@@ -2,7 +2,6 @@
 
 import { useStore } from "../stores/useStore";
 import { modes, Mode } from "../lib/modes";
-import { motion } from "framer-motion";
 
 export default function ModeSelector() {
     const { currentMode, setMode } = useStore();
@@ -26,11 +25,7 @@ export default function ModeSelector() {
                             {mode.name}
                         </span>
                         {isActive && (
-                            <motion.div
-                                layoutId="activeMode"
-                                className="absolute -bottom-1 w-1 h-1 rounded-full bg-white"
-                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            />
+                            <div className="absolute -bottom-1 w-1 h-1 rounded-full bg-white animate-fade-in" />
                         )}
                     </button>
                 );

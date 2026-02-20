@@ -20,6 +20,20 @@ interface HealingState {
 
     hasEntered: boolean;
     setHasEntered: (entered: boolean) => void;
+
+    // 인증 및 프리미엄
+    user: { id: string; name: string; email: string; image?: string } | null;
+    isLoggedIn: boolean;
+    isPremium: boolean;
+    setUser: (user: any) => void;
+    setIsPremium: (premium: boolean) => void;
+    logout: () => void;
+
+    showPremiumModal: boolean;
+    setShowPremiumModal: (show: boolean) => void;
+
+    soundLayers: { id: string; sound: string; volume: number }[];
+    setSoundLayers: (layers: any[]) => void;
 }
 
 export const useStore = create<HealingState>((set) => ({
@@ -41,4 +55,21 @@ export const useStore = create<HealingState>((set) => ({
 
     hasEntered: false,
     setHasEntered: (entered) => set({ hasEntered: entered }),
+
+    // STEP 3 초기값
+    user: null,
+    isLoggedIn: false,
+    isPremium: false,
+    setUser: (user) => set({ user, isLoggedIn: !!user }),
+    setIsPremium: (premium) => set({ isPremium: premium }),
+    logout: () => set({ user: null, isLoggedIn: false, isPremium: false }),
+
+    showPremiumModal: false,
+    setShowPremiumModal: (show) => set({ showPremiumModal: show }),
+
+    soundLayers: [
+        { id: "1", sound: "rain", volume: 0.5 },
+        { id: "2", sound: "birds", volume: 0.3 }
+    ],
+    setSoundLayers: (layers) => set({ soundLayers: layers }),
 }));
