@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { useStore } from "@/stores/useStore";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, LogOut, Award, BarChart2, Calendar, CreditCard } from "lucide-react";
-import { signOut } from "next-auth/react";
+
+// import { signOut } from "next-auth/react";
+const signOut = (opts?: any) => Promise.resolve();
 
 export default function MyPage() {
-    const { user, isLoggedIn, isPremium } = useStore();
+    const { user, isLoggedIn, isPremium, logout } = useStore();
     const router = useRouter();
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -32,6 +34,12 @@ export default function MyPage() {
         fetchStats();
     }, [isLoggedIn, router]);
 
+    const handleLogout = async () => {
+        await signOut({ callbackUrl: "/" });
+        logout();
+        router.push("/");
+    };
+
     if (!user) return null;
 
     return (
@@ -41,7 +49,7 @@ export default function MyPage() {
                     <ChevronLeft size={24} />
                 </button>
                 <h1 className="text-sm uppercase tracking-[0.3em] font-light">My Page</h1>
-                <button onClick={() => signOut({ callbackUrl: "/" })} className="text-white/30 hover:text-white transition-colors">
+                <button onClick={handleLogout} className="text-white/30 hover:text-white transition-colors">
                     <LogOut size={20} />
                 </button>
             </header>
@@ -99,7 +107,7 @@ export default function MyPage() {
                                 <div>
                                     <p className="text-sm font-medium">{stats?.subscription?.plan === 'monthly' ? '월간 구독' : '연간 구독'}</p>
                                     <p className="text-[10px] text-white/40 mt-1">
-                                        만료일: {new Date(stats?.subscription?.expires_at).toLocaleDateString()}
+                                        만료일: {stats?.subscription?.expires_at ? new Date(stats?.subscription?.expires_at).toLocaleDateString() : '-'}
                                     </p>
                                 </div>
                                 <span className="text-[10px] text-green-400 uppercase tracking-widest">Active</span>

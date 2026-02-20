@@ -1,6 +1,10 @@
 "use client";
 
-import { signIn } from "next-auth/react";
+// import { signIn } from "next-auth/react";
+const signIn = (provider: string, opts?: any) => {
+    alert("현재 인증 기능이 준비 중입니다. 잠시 후 다시 시도해주세요.");
+    return Promise.resolve();
+};
 import BreathingCircle from "@/components/BreathingCircle";
 
 export default function LoginPage() {

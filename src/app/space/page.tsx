@@ -7,9 +7,12 @@ import { modes, Mode } from "@/lib/modes";
 import BreathingCircle from "@/components/BreathingCircle";
 import PremiumModal from "@/components/PremiumModal";
 import { MoreHorizontal, Music, Flower2, User, LogOut, LayoutGrid } from "lucide-react";
-import { useSession, signOut as nextSignOut } from "next-auth/react";
+// import { useSession, signOut as nextSignOut } from "next-auth/react";
 import { getClipsByMode, VideoClip } from "@/lib/clips";
 import { soundEngine, SOUND_LIBRARY } from "@/lib/sound-engine";
+
+const useSession = () => ({ data: null, status: "unauthenticated" });
+const nextSignOut = () => Promise.resolve();
 
 export default function Space() {
     const { data: session } = useSession();
@@ -50,102 +53,85 @@ export default function Space() {
     const writingIdleTimer = useRef<NodeJS.Timeout | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
-    // 인증 상태 동기화
+    // 인증 상태 동기화 (비활성화 상태)
     useEffect(() => {
         if (session?.user) {
             setUser({
                 id: session.user.id,
                 name: session.user.name,
                 email: session.user.email,
-                image: session.user.image,
+                image: (session.user as any).image,
             });
         }
     }, [session, setUser]);
 
-    // 리다이렉트 및 클립 로드
+    // 시간 업데이트 로직
     useEffect(() => {
-        if (!currentMode) {
-            router.push("/");
-            return;
-        }
+        const update = () => {
+            const now = new Date();
+            const h = now.getHours().toString().padStart(2, "0");
+            const m = now.getMinutes().toString().padStart(2, "0");
+            setTime(`${h}:${m}`);
+            setIs1201(h === "12" && m === "01");
+        };
+        update();
+        const timer = setInterval(update, 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    // 영상 시퀀스 제어
+    useEffect(() => {
+        if (!currentMode) return;
         const clips = getClipsByMode(currentMode);
         setActiveClips(clips);
         setCurrentClipIndex(0);
         setNextClipIndex(null);
-    }, [currentMode, router]);
+    }, [currentMode]);
 
-    // 사운드 엔진 초기화 및 레이어 재생
+    // 사운드 엔진 볼륨 조절
     useEffect(() => {
-        const initEngine = async () => {
-            if (soundEngine) {
-                await soundEngine.init();
-                // 정원 레이어 재생
-                soundLayers.forEach((layer: any) => {
-                    soundEngine.play(layer.sound, layer.volume * volume);
-                });
-            }
-        };
-        initEngine();
-        return () => {
-            // 엔진은 소리 정원과 공유되므로 여기서 dispose하진 않음
-        };
-    }, [soundLayers, volume]);
-
-    // 마스터 볼륨 실시간 조절
-    useEffect(() => {
-        if (soundEngine) soundEngine.setMasterVolume(volume);
-        if (audioRef.current) audioRef.current.volume = volume;
+        soundEngine.setMasterVolume(volume);
     }, [volume]);
 
-    // 영상 자동 전환 시스템 (크로스페이드)
+    // 사운드 레이어 동기화
     useEffect(() => {
-        if (activeClips.length <= 1) return;
-
-        const currentClip = activeClips[currentClipIndex];
-        // 클립 종료 2초 전에 전환 시작
-        const timer = setTimeout(() => {
-            setIsTransitioning(true);
-            const nextIdx = (currentClipIndex + 1) % activeClips.length;
-            setNextClipIndex(nextIdx);
-
-            // 2초 크로스페이드 후 클립 인덱스 교체
-            setTimeout(() => {
-                setCurrentClipIndex(nextIdx);
-                setNextClipIndex(null);
-                setIsTransitioning(false);
-            }, 2000);
-        }, (currentClip.duration - 2) * 1000);
-
-        return () => clearTimeout(timer);
-    }, [currentClipIndex, activeClips]);
-
-    // 시계 및 12:01 이스터에그
-    useEffect(() => {
-        const tick = () => {
-            const now = new Date();
-            const h = String(now.getHours()).padStart(2, "0");
-            const m = String(now.getMinutes()).padStart(2, "0");
-            setTime(`${h}:${m}`);
-            setIs1201(h === "12" && m === "01");
+        if (soundLayers.length > 0) {
+            soundLayers.forEach((layer: any) => {
+                soundEngine.play(layer.sound, layer.volume);
+            });
+        }
+        return () => {
+            soundLayers.forEach((layer: any) => {
+                soundEngine.stop(layer.sound);
+            });
         };
-        tick();
-        const interval = setInterval(tick, 60000);
-        return () => clearInterval(interval);
-    }, []);
+    }, [soundLayers]);
 
-    // 글 흘려보내기
-    const handleFlowAway = async () => {
-        if (inputText.trim() === "") {
-            setIsWriting(false);
+    const handleModeSelect = (modeKey: Mode) => {
+        const mode = modes[modeKey];
+        if (mode.isPremium && !isPremium) {
+            setShowPremiumModal(true);
             return;
         }
+        router.push(`/space?mode=${modeKey}`);
+    };
 
+    const handleLogout = async () => {
+        await nextSignOut();
+        logout();
+        router.push("/");
+    };
+
+    const handleWritingSubmit = async () => {
+        if (!inputText.trim()) return;
+
+        // DB 저장 로직 (선택 사항)
         if (isLoggedIn) {
             try {
                 await fetch("/api/writings", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ content: inputText }),
+                    body: JSON.stringify({ content: inputText, mode: currentMode }),
                 });
             } catch (error) { }
         }
@@ -209,94 +195,101 @@ export default function Space() {
                     </video>
                 )}
 
-                {/* 모드별 색보정 오버레이 (CSS Filter) */}
+                {/* 컬러 그레이딩 오버레이 */}
                 <div
-                    className="absolute inset-0 pointer-events-none z-10"
+                    className="absolute inset-0 pointer-events-none transition-colors duration-1000"
                     style={{
-                        backdropFilter:
-                            currentMode === 'dawn' ? "brightness(0.8) saturate(0.7) hue-rotate(-10deg)" :
-                                currentMode === 'noon' ? "brightness(1.1) saturate(0.9) sepia(0.1)" :
-                                    currentMode === 'dusk' ? "brightness(0.9) saturate(1.2) hue-rotate(15deg)" : "none"
+                        backgroundColor: mode.accentColor,
+                        opacity: isWriting ? 0.4 : 0.15
                     }}
                 />
             </div>
 
-            {/* 배경 사운드 (기본) */}
-            <audio ref={audioRef} autoPlay loop src={mode.soundSrc} />
-
-            {/* UI 레이어 */}
-            <div className={`relative z-20 h-full w-full flex flex-col items-center justify-between pb-12 pt-12 transition-all-slow ${showUI ? "opacity-100" : "opacity-0"}`}>
-                <div />
-
-                {isWriting ? (
-                    <div className="flex flex-col items-center gap-8 w-full px-8">
-                        <textarea
-                            autoFocus
-                            className={`writing-textarea transition-transform duration-1000 ${isFloating ? "animate-float-up" : ""}`}
-                            placeholder=""
-                            value={inputText}
-                            onChange={(e) => setInputText(e.target.value)}
-                        />
-                        <div className={isFloating ? "opacity-0 transition-opacity" : "animate-fade-in"}>
-                            <BreathingCircle
-                                color={mode.circleColor}
-                                size={48}
-                                onClick={handleFlowAway}
-                                label="흘려보내기"
-                            />
-                        </div>
-                    </div>
-                ) : (
-                    <div className="animate-fade-in">
-                        <BreathingCircle
-                            color={mode.circleColor}
-                            size={64}
-                            onClick={() => setIsWriting(true)}
-                            label="글쓰기 열기"
-                        />
-                    </div>
+            {/* 시계 및 UI */}
+            <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center transition-opacity duration-1000 ${showUI ? "opacity-100" : "opacity-0"}`}>
+                {showClock && !isWriting && (
+                    <h1 className={`text-8xl font-thin tracking-widest transition-all duration-1000 ${is1201 ? "text-purple-300 drop-shadow-glow" : "text-white/80"}`}>
+                        {time}
+                    </h1>
                 )}
 
-                <div className="flex flex-col items-center gap-6 w-full">
-                    {!isWriting && (
-                        <div className="flex flex-col items-center animate-fade-in delay-1000">
-                            <input
-                                type="range"
-                                min="0"
-                                max="1"
-                                step="0.01"
-                                value={volume}
-                                onChange={(e) => setVolume(parseFloat(e.target.value))}
-                                className="volume-slider"
+                {/* 기록 공간 */}
+                {isWriting && (
+                    <div className="w-full max-w-2xl px-8 flex flex-col items-center animate-fade-in">
+                        <textarea
+                            autoFocus
+                            value={inputText}
+                            onChange={(e) => setInputText(e.target.value)}
+                            placeholder="지금 이 순간의 마음을 적어보세요..."
+                            className="w-full bg-transparent border-none text-center text-2xl font-light placeholder:text-white/20 focus:ring-0 resize-none h-48 transition-all"
+                        />
+                        <div className="mt-12">
+                            <BreathingCircle
+                                color={mode.accentColor}
+                                size={64}
+                                onClick={handleWritingSubmit}
+                                label="보내기"
                             />
                         </div>
-                    )}
-                    <div className={`cursor-pointer transition-all-slow ${showClock ? "opacity-100" : "opacity-0 pointer-events-none"}`} onClick={toggleClock}>
-                        <span className="text-white/30 text-sm font-display tracking-healing">{time}</span>
                     </div>
-                </div>
+                )}
             </div>
 
-            {/* 히든 메뉴 */}
+            {/* 좌하단 히든 메뉴 */}
             <div className={`absolute bottom-8 left-8 z-50 flex items-end gap-4 transition-all-slow ${showUI && !isWriting ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
                 <div className={`flex flex-col gap-3 bg-black/60 backdrop-blur-md p-4 rounded-3xl transition-all-slow border border-white/10 ${showMiniMenu ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`}>
-                    <button onClick={() => router.push("/")} className="flex items-center gap-3 text-sm text-white/50 hover:text-white transition-colors">
-                        <LayoutGrid size={14} /> 테마 선택
-                    </button>
-                    <button onClick={() => !isPremium ? setShowPremiumModal(true) : router.push("/premium/sound-garden")} className="flex items-center gap-3 text-sm text-white/50 hover:text-white transition-colors">
+                    <button
+                        onClick={() => !isPremium ? setShowPremiumModal(true) : router.push("/premium/sound-garden")}
+                        className="flex items-center gap-3 text-sm text-white/50 hover:text-white transition-colors"
+                    >
                         <Music size={14} /> 소리 정원
                     </button>
-                    <button onClick={() => !isPremium ? setShowPremiumModal(true) : router.push("/premium/writing-garden")} className="flex items-center gap-3 text-sm text-white/50 hover:text-white transition-colors">
+                    <button
+                        onClick={() => !isPremium ? setShowPremiumModal(true) : router.push("/premium/writing-garden")}
+                        className="flex items-center gap-3 text-sm text-white/50 hover:text-white transition-colors"
+                    >
                         <Flower2 size={14} /> 기록 정원
                     </button>
-                    <button onClick={() => router.push(isLoggedIn ? "/mypage" : "/login")} className="flex items-center gap-3 text-sm text-white/50 hover:text-white transition-colors border-t border-white/5 pt-3 mt-1">
+                    <div className="h-[1px] bg-white/10 my-1" />
+                    <button
+                        onClick={() => router.push("/mypage")}
+                        className="flex items-center gap-3 text-sm text-white/50 hover:text-white transition-colors"
+                    >
                         <User size={14} /> 마이페이지
                     </button>
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 text-sm text-white/50 hover:text-white transition-colors"
+                    >
+                        <LogOut size={14} /> 로그아웃
+                    </button>
                 </div>
-                <button onClick={() => setShowMiniMenu(!showMiniMenu)} className="text-white/20 hover:text-white/50 transition-colors p-2 text-2xl">
+                <button
+                    onClick={() => setShowMiniMenu(!showMiniMenu)}
+                    className="p-3 bg-black/40 hover:bg-black/60 rounded-full transition-all border border-white/5 text-white/40 hover:text-white"
+                >
                     <MoreHorizontal size={20} />
                 </button>
             </div>
+
+            {/* 기록 시작 트리거 (화면 하단 중앙) */}
+            <div className={`absolute bottom-12 left-1/2 -translate-x-1/2 z-40 transition-opacity duration-700 ${showUI && !isWriting ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+                <button
+                    onClick={() => setIsWriting(true)}
+                    className="text-[10px] tracking-[0.3em] text-white/20 hover:text-white/60 transition-all uppercase"
+                >
+                    Write your heart
+                </button>
+            </div>
+
+            {/* 떠오르는 글자 애니메이션 */}
+            {isFloating && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+                    <p className="text-xl font-light text-white animate-float-up opacity-0">
+                        {inputText}
+                    </p>
+                </div>
+            )}
 
             <PremiumModal />
         </main>

@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
 import { Providers } from "@/components/Providers";
-import AuthSync from "@/components/AuthSync";
 
 export const metadata: Metadata = {
     title: "1201 — 당신이 당신에게 돌아오는 시간",
     description: "12시 01분, 잠깐 멈춰도 괜찮은 시간.",
+    icons: {
+        icon: "/favicon.svg",
+    },
     openGraph: {
         title: "1201",
         description: "당신이 당신에게 돌아오는 시간",
@@ -38,7 +40,6 @@ export default function RootLayout({
         <html lang="ko">
             <body className="bg-black antialiased">
                 <Providers>
-                    <AuthSync />
                     {children}
                 </Providers>
             </body>
