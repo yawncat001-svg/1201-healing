@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "1201 Breathe", var(--font-sans);
+  --tracking-healing: 0.2em;
+}
+
+@font-face {
+  font-family: "1201 Breathe";
+  src: url("/fonts/1201-breathe.woff2") format("woff2");
+  font-weight: 100 400;
+  font-display: swap;
+}
+
+html,
+body {
+  overflow: hidden;
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgba(200, 182, 226, 0.3);
+}
