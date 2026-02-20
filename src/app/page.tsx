@@ -18,7 +18,7 @@ export default function Landing() {
         setTimeout(() => {
             setPhase("select");
             setIsFading(false);
-        }, 1000);
+        }, 800);
     };
 
     const handleModeSelect = (modeKey: Mode) => {
@@ -32,38 +32,32 @@ export default function Landing() {
     };
 
     return (
-        <main className={`hb-container ${isFading ? 'fade-out' : ''}`}>
-            {/* ===== INTRO PHASE ===== */}
+        <main className="flex min-h-screen w-full flex-col items-center justify-center bg-black px-4 transition-opacity duration-700" style={{ opacity: isFading ? 0 : 1 }}>
+            {/* ===== intro phase ===== */}
             {phase === "intro" && (
-                <>
-                    <h1 className="hb-title">12:01</h1>
-                    <p className="hb-desc">당신이 당신에게 돌아오는 시간</p>
-                    <div className="hb-circle-container">
-                        <div className="hb-circle-glow" />
+                <div className="flex flex-col items-center text-center">
+                    <h1 className="animate-fade-in text-6xl font-extralight tracking-[0.3em] text-white/90 md:text-8xl" style={{ animationDelay: '0.2s' }}>
+                        12:01
+                    </h1>
+                    <p className="animate-fade-in mt-6 text-sm tracking-[0.2em] text-white/50 md:text-base" style={{ animationDelay: '0.8s' }}>
+                        당신이 당신에게 돌아오는 시간
+                    </p>
+                    <div className="animate-fade-in mt-16 flex items-center justify-center" style={{ animationDelay: '1.4s' }}>
                         <button
                             onClick={handleEnter}
-                            className="hb-button"
-                            aria-label="Enter 12:01"
+                            className="animate-breathe h-12 w-12 cursor-pointer rounded-full bg-white/30 border-none transition-transform hover:scale-110 active:scale-95"
+                            aria-label="Enter"
                         />
                     </div>
-                </>
+                </div>
             )}
 
-            {/* ===== SELECT PHASE ===== */}
+            {/* ===== select phase ===== */}
             {phase === "select" && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3rem', width: '100%', maxWidth: '800px', padding: '2rem' }}>
-                    <p style={{ fontSize: '0.8rem', letterSpacing: '0.3em', color: 'rgba(255,255,255,0.4)' }}>
-                        오늘은 어떤 빛이 필요한가요
-                    </p>
+                <div className="animate-fade-in flex w-full max-w-4xl flex-col items-center gap-12 py-12">
+                    <p className="text-sm tracking-widest text-white/40">오늘은 어떤 빛이 필요한가요</p>
 
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                        gap: '3rem',
-                        width: '100%',
-                        maxHeight: '70vh',
-                        overflowY: 'auto'
-                    }}>
+                    <div className="no-scrollbar grid w-full grid-cols-2 gap-8 overflow-y-auto px-4 md:grid-cols-4 md:gap-12">
                         {(Object.keys(modes) as Mode[]).map((modeKey) => {
                             const mode = modes[modeKey];
                             const isLocked = mode.isPremium && !isPremium;
@@ -71,36 +65,16 @@ export default function Landing() {
                             return (
                                 <div
                                     key={modeKey}
-                                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', cursor: 'pointer' }}
+                                    className="group flex cursor-pointer flex-col items-center gap-4 transition-transform hover:scale-105"
                                     onClick={() => handleModeSelect(modeKey)}
                                 >
-                                    <div style={{ position: 'relative', width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <div style={{
-                                            position: 'absolute',
-                                            width: '50px',
-                                            height: '50px',
-                                            borderRadius: '50%',
-                                            backgroundColor: mode.circleColor,
-                                            filter: 'blur(15px)',
-                                            opacity: 0.6
-                                        }} />
-                                        <div style={{
-                                            position: 'relative',
-                                            width: '36px',
-                                            height: '36px',
-                                            borderRadius: '50%',
-                                            backgroundColor: mode.circleColor,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            overflow: 'hidden'
-                                        }}>
-                                            {isLocked && <Lock size={12} color="rgba(255,255,255,0.6)" />}
-                                        </div>
+                                    <div className="relative flex h-16 w-16 items-center justify-center rounded-full" style={{ backgroundColor: mode.circleColor }}>
+                                        <div className="absolute inset-0 rounded-full blur-md opacity-40 group-hover:opacity-70 transition-opacity" style={{ backgroundColor: mode.circleColor }} />
+                                        {isLocked && <Lock size={14} className="relative z-10 text-white/60" />}
                                     </div>
-                                    <div style={{ textAlign: 'center' }}>
-                                        <p style={{ fontSize: '0.75rem', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.8)' }}>{mode.nameKR}</p>
-                                        <p style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', marginTop: '0.3rem' }}>{mode.name}</p>
+                                    <div className="text-center">
+                                        <p className="text-xs tracking-wider text-white/80">{mode.nameKR}</p>
+                                        <p className="mt-1 text-[10px] uppercase tracking-tighter text-white/30">{mode.name}</p>
                                     </div>
                                 </div>
                             );
