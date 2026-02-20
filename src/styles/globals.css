@@ -1,74 +1,6 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
 @import "tailwindcss";
 
-/* 표준 CSS 애니메이션 정의 (Tailwind 파싱 의존도 낮춤) */
-@keyframes breathe {
-
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.5;
-  }
-
-  50% {
-    transform: scale(1.18);
-    opacity: 1;
-  }
-}
-
-@keyframes breathe-glow {
-
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.2;
-  }
-
-  50% {
-    transform: scale(1.3);
-    opacity: 0.6;
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fade-in-simple {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes star-float {
-  0% {
-    transform: translateY(0) translateX(0);
-    opacity: 0.6;
-  }
-
-  50% {
-    transform: translateY(-15px) translateX(10px);
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateY(5px) translateX(-5px);
-    opacity: 0.8;
-  }
-}
-
 @layer base {
 
   html,
@@ -84,72 +16,99 @@
   }
 }
 
-@layer utilities {
+/* 
+  애니메이션 초기 상태 강제 설정 
+  animate- 가 포함된 모든 요소는 애니메이션 시작 전까지 투명하게 유지
+*/
+[class*="animate-fade-in"] {
+  opacity: 0;
+}
 
-  /* 애니메이션 실행 클래스 */
-  .animate-breathe {
-    animation: breathe 8s ease-in-out infinite;
+/* 표준 Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
 
-  .animate-breathe-glow {
-    animation: breathe-glow 8s ease-in-out infinite;
-  }
-
-  .animate-fade-in {
-    animation: fade-in 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  }
-
-  .animate-fade-in-simple {
-    animation: fade-in-simple 2s ease-out forwards;
-  }
-
-  .animate-star-float {
-    animation: star-float 6s ease-in-out infinite;
-  }
-
-  /* 딜레이 유틸리티 (!important를 추가하여 강제 적용) */
-  .delay-500 {
-    animation-delay: 500ms !important;
-  }
-
-  .delay-1000 {
-    animation-delay: 1000ms !important;
-  }
-
-  .delay-1500 {
-    animation-delay: 1500ms !important;
-  }
-
-  .delay-2000 {
-    animation-delay: 2000ms !important;
-  }
-
-  .delay-2500 {
-    animation-delay: 2500ms !important;
-  }
-
-  .delay-3000 {
-    animation-delay: 3000ms !important;
-  }
-
-  /* 기타 힐링 UI 유틸리티 */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .blur-2xl {
-    filter: blur(40px);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* 전역 트랜지션 설정 */
-.transition-opacity {
-  transition-property: opacity;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 800ms;
+@keyframes breathePulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes glowPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.15;
+    filter: blur(30px);
+  }
+
+  50% {
+    transform: scale(1.4);
+    opacity: 0.5;
+    filter: blur(50px);
+  }
+}
+
+/* 
+  강력한 유틸리티 클래스 (Tailwind 오버라이드 방지를 위해 최하단 배치)
+*/
+.animate-fade-in {
+  animation: fadeIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+.animate-breathe {
+  animation: breathePulse 8s ease-in-out infinite !important;
+}
+
+.animate-breathe-glow {
+  animation: glowPulse 8s ease-in-out infinite !important;
+}
+
+/* 딜레이 강제 적용 */
+.delay-500 {
+  animation-delay: 500ms !important;
+}
+
+.delay-1000 {
+  animation-delay: 1000ms !important;
+}
+
+.delay-1500 {
+  animation-delay: 1500ms !important;
+}
+
+.delay-2000 {
+  animation-delay: 2000ms !important;
+}
+
+.delay-2500 {
+  animation-delay: 2500ms !important;
+}
+
+/* 기타 UI */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
