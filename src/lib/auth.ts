@@ -13,6 +13,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             clientSecret: process.env.KAKAO_CLIENT_SECRET,
         }),
     ],
+    trustHost: true,
     callbacks: {
         async session({ session, token }) {
             if (session.user) {
