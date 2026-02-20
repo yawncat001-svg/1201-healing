@@ -1,31 +1,12 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
 @import "tailwindcss";
 
-@layer base {
-
-  html,
-  body {
-    overflow: hidden;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    background: #000;
-    color: #fff;
-    font-family: "Pretendard Variable", "Pretendard", system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
-}
-
 /* 
-  애니메이션 초기 상태 강제 설정 
-  animate- 가 포함된 모든 요소는 애니메이션 시작 전까지 투명하게 유지
+  근본적인 애니메이션 해결: 
+  Tailwind 접두사와 충돌하지 않도록 'hb-' (Healing Breathe) 접두사 사용
 */
-[class*="animate-fade-in"] {
-  opacity: 0;
-}
 
-/* 표준 Keyframes */
-@keyframes fadeIn {
+@keyframes hb-fadeIn {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -37,7 +18,7 @@
   }
 }
 
-@keyframes breathePulse {
+@keyframes hb-breathe {
 
   0%,
   100% {
@@ -51,7 +32,7 @@
   }
 }
 
-@keyframes glowPulse {
+@keyframes hb-glow {
 
   0%,
   100% {
@@ -67,48 +48,62 @@
   }
 }
 
-/* 
-  강력한 유틸리티 클래스 (Tailwind 오버라이드 방지를 위해 최하단 배치)
-*/
-.animate-fade-in {
-  animation: fadeIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+/* 초기 상태 제어 */
+.hb-animate-fade-in {
+  opacity: 0;
+  animation: hb-fadeIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
-.animate-breathe {
-  animation: breathePulse 8s ease-in-out infinite !important;
+.hb-animate-breathe {
+  animation: hb-breathe 8s ease-in-out infinite !important;
 }
 
-.animate-breathe-glow {
-  animation: glowPulse 8s ease-in-out infinite !important;
+.hb-animate-breathe-glow {
+  animation: hb-glow 8s ease-in-out infinite !important;
 }
 
-/* 딜레이 강제 적용 */
-.delay-500 {
+/* 딜레이 클래스 */
+.hb-delay-500 {
   animation-delay: 500ms !important;
 }
 
-.delay-1000 {
+.hb-delay-1000 {
   animation-delay: 1000ms !important;
 }
 
-.delay-1500 {
+.hb-delay-1500 {
   animation-delay: 1500ms !important;
 }
 
-.delay-2000 {
+.hb-delay-2000 {
   animation-delay: 2000ms !important;
 }
 
-.delay-2500 {
+.hb-delay-2500 {
   animation-delay: 2500ms !important;
 }
 
-/* 기타 UI */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+@layer base {
+
+  html,
+  body {
+    overflow: hidden;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: #000;
+    color: #fff;
+    font-family: "Pretendard Variable", "Pretendard", system-ui, sans-serif;
+  }
 }
 
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
