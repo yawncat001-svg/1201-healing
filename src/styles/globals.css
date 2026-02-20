@@ -1,10 +1,52 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css");
-@import "tailwindcss";
 
-/* 
-  근본적인 애니메이션 해결: 
-  Tailwind 접두사와 충돌하지 않도록 'hb-' (Healing Breathe) 접두사 사용
-*/
+/* 전역 초기화 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  color: #fff;
+  font-family: "Pretendard Variable", "Pretendard", sans-serif;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 힐링 랜딩 전용 스타일 (의존성 없음) */
+.hb-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+}
+
+.hb-title {
+  font-size: 5rem;
+  font-weight: 200;
+  letter-spacing: 0.5em;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 2rem;
+  opacity: 0;
+  animation: hb-fadeIn 2s ease-out 0.5s forwards;
+}
+
+.hb-desc {
+  font-size: 0.875rem;
+  letter-spacing: 0.3em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 4rem;
+  opacity: 0;
+  animation: hb-fadeIn 2s ease-out 1.5s forwards;
+}
 
 @keyframes hb-fadeIn {
   from {
@@ -18,92 +60,67 @@
   }
 }
 
+.hb-circle-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  opacity: 0;
+  animation: hb-fadeIn 2s ease-out 2.5s forwards;
+}
+
+.hb-circle-glow {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  filter: blur(25px);
+  animation: hb-breathe-glow 6s ease-in-out infinite;
+}
+
+.hb-button {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.4);
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+  animation: hb-breathe 6s ease-in-out infinite;
+}
+
 @keyframes hb-breathe {
 
   0%,
   100% {
     transform: scale(1);
-    opacity: 0.5;
   }
 
   50% {
-    transform: scale(1.15);
-    opacity: 1;
+    transform: scale(1.2);
   }
 }
 
-@keyframes hb-glow {
+@keyframes hb-breathe-glow {
 
   0%,
   100% {
     transform: scale(1);
-    opacity: 0.15;
-    filter: blur(30px);
+    opacity: 0.3;
   }
 
   50% {
-    transform: scale(1.4);
-    opacity: 0.5;
-    filter: blur(50px);
+    transform: scale(1.5);
+    opacity: 0.6;
   }
 }
 
-/* 초기 상태 제어 */
-.hb-animate-fade-in {
+/* 유틸리티 */
+.fade-out {
   opacity: 0;
-  animation: hb-fadeIn 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-}
-
-.hb-animate-breathe {
-  animation: hb-breathe 8s ease-in-out infinite !important;
-}
-
-.hb-animate-breathe-glow {
-  animation: hb-glow 8s ease-in-out infinite !important;
-}
-
-/* 딜레이 클래스 */
-.hb-delay-500 {
-  animation-delay: 500ms !important;
-}
-
-.hb-delay-1000 {
-  animation-delay: 1000ms !important;
-}
-
-.hb-delay-1500 {
-  animation-delay: 1500ms !important;
-}
-
-.hb-delay-2000 {
-  animation-delay: 2000ms !important;
-}
-
-.hb-delay-2500 {
-  animation-delay: 2500ms !important;
-}
-
-@layer base {
-
-  html,
-  body {
-    overflow: hidden;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    background: #000;
-    color: #fff;
-    font-family: "Pretendard Variable", "Pretendard", system-ui, sans-serif;
-  }
-}
-
-@layer utilities {
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  transition: opacity 1s ease-in-out;
 }
